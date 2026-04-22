@@ -225,8 +225,8 @@ jobs:
           REDIS_PORT: 6379
         run: |
           docker compose \
-            -f docker-compose.yml \
-            -f docker-compose.test.yml \
+            -f docker-compose.yaml \
+            -f docker-compose.test.yaml \
             up -d --no-build
       - name: Wait for API health check
         run: |
