@@ -7,11 +7,26 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-redis_conn = redis.Redis(
-    host=os.getenv("REDIS_HOST"),
-    port=os.getenv("REDIS_PORT"),
-    decode_responses=True,
-)
+redis_host = os.getenv("REDIS_HOST")
+redis_port_str = os.getenv("REDIS_PORT")
+if not redis_host or not redis_port_str:
+    raise ValueError("REDIS_HOST and REDIS_PORT environment variables must be set")
+try:
+    redis_port = int(redis_port_str)
+except ValueError:
+    raise ValueError("REDIS_PORT must be a valid integer")
+try:
+    with open("/run/secrets/redis_password") as handler:
+        password = handler.read().strip()
+    redis_conn = redis.Redis(
+        host=redis_host,
+        port=redis_port,
+        password=password,
+        decode_responses=True,
+    )
+except Exception as e:
+    print(f"An error occured: {e}")
+
 
 shutdown = False
 
