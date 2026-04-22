@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.env*
+api/.venv/
+worker/.venv/
+frontend/node_modules/
+secrets/
