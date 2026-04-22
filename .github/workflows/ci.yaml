@@ -293,7 +293,127 @@ jobs:
       - name: Tear down stack (always)
         if: always()
         run: docker compose down -v --remove-orphans
+  deploy:
+    name: Deploy
+    runs-on: self-hosted
+    needs: integration
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      - name: Write redis secret
+        run: |
+          mkdir -p /opt/app/secrets
+          echo "${{ secrets.REDIS_PASSWORD }}" > /opt/app/secrets/redis_password
 
+      - name: Rolling update — API
+        env:
+          SHA: ${{ github.sha }}
+          REGISTRY: ${{ secrets.DEPLOY_REGISTRY }}
+        run: |
+          # Pull new image
+          docker pull $REGISTRY/api:$SHA
 
+          # Start canary alongside the live container
+          docker run -d \
+            --name api-canary \
+            --network hng-net \
+            --env-file /opt/app/.env \
+            --secret redis_password \
+            $REGISTRY/api:$SHA
+
+          # Health check loop — max 60s
+          DEADLINE=$(( $(date +%s) + 60 ))
+          HEALTHY=false
+          while [ $(date +%s) -lt $DEADLINE ]; do
+            if docker exec api-canary curl -sf http://127.0.0.1:8000/health; then
+              HEALTHY=true
+              break
+            fi
+            sleep 3
+          done
+
+          # Abort and leave old container running if canary never passed
+          if [ "$HEALTHY" != "true" ]; then
+            echo "Canary failed — removing it, old container untouched"
+            docker rm -f api-canary
+            exit 1
+          fi
+
+          # Swap
+          docker rm -f api
+          docker rename api-canary api
+
+      - name: Rolling update — Worker
+        env:
+          SHA: ${{ github.sha }}
+          REGISTRY: ${{ secrets.DEPLOY_REGISTRY }}
+        run: |
+          docker pull $REGISTRY/worker:$SHA
+
+          docker run -d \
+            --name worker-canary \
+            --network hng-net \
+            --env-file /opt/app/.env \
+            --secret redis_password \
+            $REGISTRY/worker:$SHA
+
+          DEADLINE=$(( $(date +%s) + 60 ))
+          HEALTHY=false
+          while [ $(date +%s) -lt $DEADLINE ]; do
+            if docker exec worker-canary pgrep -x python3 > /dev/null; then
+              HEALTHY=true
+              break
+            fi
+            sleep 3
+          done
+
+          if [ "$HEALTHY" != "true" ]; then
+            docker rm -f worker-canary
+            exit 1
+          fi
+
+          docker rm -f worker
+          docker rename worker-canary worker
+
+      - name: Rolling update — Frontend
+        env:
+          SHA: ${{ github.sha }}
+          REGISTRY: ${{ secrets.DEPLOY_REGISTRY }}
+        run: |
+          docker pull $REGISTRY/frontend:$SHA
+
+          docker run -d \
+            --name frontend-canary \
+            --network hng-net \
+            -p 3001:3000 \
+            $REGISTRY/frontend:$SHA
+
+          DEADLINE=$(( $(date +%s) + 60 ))
+          HEALTHY=false
+          while [ $(date +%s) -lt $DEADLINE ]; do
+            if curl -sf http://127.0.0.1:3001; then
+              HEALTHY=true
+              break
+            fi
+            sleep 3
+          done
+
+          if [ "$HEALTHY" != "true" ]; then
+            docker rm -f frontend-canary
+            exit 1
+          fi
+
+          # Stop old, re-run canary on the real port
+          docker rm -f frontend
+          docker run -d \
+            --name frontend \
+            --network hng-net \
+            -p 3000:3000 \
+            $REGISTRY/frontend:$SHA
+          docker rm -f frontend-canary
+
+      - name: Prune old images
+        run: docker image prune -f --filter "until=24h"
