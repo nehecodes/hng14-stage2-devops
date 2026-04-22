@@ -1,12 +1,12 @@
 FROM python:3.11-slim as builder
-RUN pip install --no-cache-dir --upgrade pip==24.3.1 && \
+RUN pip install --no-cache-dir --upgrade pip==23.0.1 && \
 pip install --no-cache-dir uv==0.11.7
 WORKDIR /app
 COPY pyproject.toml uv.lock /app/
 RUN uv sync --no-cache
 
 FROM python:3.11-slim
-RUN apt-get update && apt-get -y install curl=8.19.0-3 --no-install-recommends && \
+RUN apt-get update && apt-get -y install curl=8.14.1-2+deb13u2 --no-install-recommends && \
 rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
