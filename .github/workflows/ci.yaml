@@ -62,14 +62,17 @@ jobs:
         with:
           python-version: "3.11"
       
+      - name: Install uv
+        run: pip install uv
+
       - name: Install API deps and pytest
         working-directory: api
-        run: pip install -e .
+        run: uv sync
 
       - name: Run unit test with coverage
         working-directory: api
         run: |
-          pytest tests/ \
+          uv run pytest tests/ \
           --cov=. \
           --cov-report=xml:coverage.xml \
           --cov-report=html:coverage-html \
