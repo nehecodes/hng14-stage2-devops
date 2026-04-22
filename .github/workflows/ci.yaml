@@ -260,10 +260,10 @@ jobs:
           JOB_ID=$(curl -sf -X POST http://localhost:8000/jobs \
             -H "Content-Type: application/json" \
             -d '{"task": "integration-test"}' \
-            | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+            | python3 -c "import sys,json; print(json.load(sys.stdin)['job_id'])")
  
           echo "Submitted job ID: $JOB_ID"
- 
+
           # Poll until status is 'completed' or timeout after 60s
           DEADLINE=$(( $(date +%s) + 60 ))
           while [ $(date +%s) -lt $DEADLINE ]; do
