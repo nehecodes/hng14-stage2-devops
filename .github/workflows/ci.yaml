@@ -37,7 +37,7 @@ jobs:
 
       - name: Lint Javascript
         working-directory: frontend
-        run: npx eslint app.js
+        run: npx eslint . --ext .js
 
       - name: Install hadolint
         run: |
