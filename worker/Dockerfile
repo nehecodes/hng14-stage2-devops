@@ -1,6 +1,6 @@
 FROM python:3.11-slim as builder
-RUN pip install --upgrade pip && \
-pip install --no-cache-dir uv
+RUN pip install --no-cache-dir --upgrade pip==24.3.1 && \
+pip install --no-cache-dir uv==0.11.7
 WORKDIR /app
 COPY pyproject.toml uv.lock /app/
 RUN uv sync --no-cache
