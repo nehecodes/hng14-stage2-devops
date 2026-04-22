@@ -24,7 +24,7 @@ jobs:
         run: pip install flake8
        
       - name: Lint Python
-        run: flake8 ./api ./worker --max-line-length=20
+        run: flake8 ./api ./worker --max-line-length=88
       
       - name: Set up node 
         uses: actions/setup-node@v4
