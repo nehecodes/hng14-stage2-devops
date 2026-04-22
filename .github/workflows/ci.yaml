@@ -274,7 +274,7 @@ jobs:
   deploy:
     name: Deploy
     runs-on: self-hosted
-    needs: integration
+    needs: build
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
