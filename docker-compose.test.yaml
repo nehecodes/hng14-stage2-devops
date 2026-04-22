@@ -1,0 +1,12 @@
+services:
+  api:
+    image: api:test
+    build: ~ 
+
+  worker:
+    image: worker:test
+    build: ~
+
+  frontend:
+    image: frontend:test
+    build: ~
