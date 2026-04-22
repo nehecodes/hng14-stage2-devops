@@ -4,7 +4,7 @@ COPY package.json package-lock.json /app/
 RUN npm ci --prefer-offline
 
 FROM node:alpine
-RUN apk update && apk add --no-cache curl=8.14.1-r2
+RUN apk update && apk add --no-cache curl=8.17.0-r1
 WORKDIR /app
 COPY --from=builder /app/node_modules /app/node_modules
 COPY . /app/
