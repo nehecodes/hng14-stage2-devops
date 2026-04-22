@@ -6,7 +6,7 @@ COPY pyproject.toml uv.lock /app/
 RUN uv sync --no-cache
 
 FROM python:3.11-slim
-RUN apt-get update && apt-get -y install curl --no-install-recommends && \
+RUN apt-get update && apt-get -y install curl=8.19.0-3 --no-install-recommends && \
 rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
