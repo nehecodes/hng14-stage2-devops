@@ -71,6 +71,10 @@ jobs:
 
       - name: Run unit test with coverage
         working-directory: api
+        env:
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          REDIS_PASSWORD: dummy-secret
         run: |
           uv run pytest tests/ \
           --cov=. \
