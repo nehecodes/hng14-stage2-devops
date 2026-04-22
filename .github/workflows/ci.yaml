@@ -104,9 +104,9 @@ jobs:
           password: ${{secrets.DOCKERHUB_SECRET}}
       - name: Build images
         run: |
-          docker build -t api:$SHA -f ./api
-          docker build -t frontend:$SHA -f ./frontend
-          docker build -t worker:$SHA -f ./worker
+          docker build -t api:$SHA -f ./api/Dockerfile ./api
+          docker build -t frontend:$SHA -f ./frontend/Dockerfile ./frontend
+          docker build -t worker:$SHA -f ./worker/Dockerfile ./worker
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
