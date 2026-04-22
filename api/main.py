@@ -7,11 +7,18 @@ import uuid
 app = FastAPI()
 host = settings.redis_host
 port = settings.redis_port
+password = settings.redis_password.get_secret_value()
 redis_conn = redis.Redis(
     host=host,
     port=port,
+    password=password,
     decode_responses=True,
 )
+
+
+@app.get("/health")
+async def health():
+    return {"app": "ok"}
 
 
 @app.post("/jobs")
