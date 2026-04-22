@@ -24,7 +24,7 @@ jobs:
         run: pip install flake8
        
       - name: Lint Python
-        run: flake8 /api /worker --max-line-length=20
+        run: flake8 ./api ./worker --max-line-length=20
       
       - name: Set up node 
         uses: actions/setup-node@v4
@@ -62,12 +62,10 @@ jobs:
         with:
           python-version: "3.11"
       
-      - name: Install uv
-        run: pip install uv
-
       - name: Install API deps and pytest
         working-directory: api
-        run: uv sync
+        run: pip install -e .
+
       - name: Run unit test with coverage
         working-directory: api
         run: |
@@ -141,6 +139,7 @@ jobs:
   security:
     name: Security scan
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - name: Checkout
         uses: actions/checkout@v5
