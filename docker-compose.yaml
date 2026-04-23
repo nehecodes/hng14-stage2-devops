@@ -4,15 +4,19 @@ services:
     ports:
       - "8000:8000"
     environment: 
-    - REDIS_HOST=${REDIS_HOST}
-    - REDIS_PORT=${REDIS_PORT}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
     secrets:
-     - redis_password
+      - redis_password
     networks:
       - hng-net
     depends_on:
       redis:
         condition: service_started
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: "0.50"
+
   redis:
     image: redis:7
     secrets:
@@ -24,12 +28,18 @@ services:
       sh -c "
         redis-server --requirepass $(cat /run/secrets/redis_password)
       "
+    mem_limit: 256m
+    cpus: "0.25"
+
   frontend:
     build: ./frontend/
     ports:
       - "3000:3000"
     networks:
       - hng-net
+    mem_limit: 256m
+    cpus: "0.25"
+
   worker:
     build: ./worker/
     environment:
@@ -39,9 +49,14 @@ services:
       - redis_password
     networks:
       - hng-net
+    restart: always
+    mem_limit: 512m
+    cpus: "0.50"
+
 networks:
   hng-net:
     driver: bridge
+
 secrets:
   redis_password:
-    file: ./secrets/redis_password   
+    file: ./secrets/redis_password

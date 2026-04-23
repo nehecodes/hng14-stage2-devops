@@ -283,8 +283,8 @@ jobs:
 
       - name: Write redis secret
         run: |
-          mkdir -p $HOME/app/secrets
-          echo "${{ secrets.REDIS_PASSWORD }}" > $HOME/app/secrets/redis_password
+          mkdir -p ${{ github.workspace }}/secrets
+          echo "${{ secrets.REDIS_PASSWORD }}" > ${{ github.workspace }}/secrets/redis_password
 
       - name: Rolling update
         env:
