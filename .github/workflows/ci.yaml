@@ -22,15 +22,15 @@ jobs:
 
       - name: Install flake8
         run: pip install flake8
-       
+
       - name: Lint Python
         run: flake8 ./api ./worker --max-line-length=88
-      
-      - name: Set up node 
+
+      - name: Set up node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-      
+
       - name: Install frontend deps
         working-directory: frontend
         run: npm ci
@@ -61,7 +61,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      
+
       - name: Install uv
         run: pip install uv
 
@@ -102,7 +102,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
@@ -118,7 +118,7 @@ jobs:
             ${{ env.REGISTRY }}/api:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
- 
+
       - name: Build & push Worker image
         uses: docker/build-push-action@v5
         with:
@@ -129,7 +129,7 @@ jobs:
             ${{ env.REGISTRY }}/worker:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
- 
+
       - name: Build & push Frontend image
         uses: docker/build-push-action@v5
         with:
@@ -151,7 +151,7 @@ jobs:
         run: |
           curl -sSL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
             | sh -s -- -b /usr/local/bin
- 
+
       - name: Scan API image
         run: |
           trivy image \
@@ -160,7 +160,7 @@ jobs:
             --format sarif \
             --output trivy-api.sarif \
             ${{ env.REGISTRY }}/api:${{ env.SHA }}
- 
+
       - name: Scan Worker image
         run: |
           trivy image \
@@ -169,7 +169,7 @@ jobs:
             --format sarif \
             --output trivy-worker.sarif \
             ${{ env.REGISTRY }}/worker:${{ env.SHA }}
- 
+
       - name: Scan Frontend image
         run: |
           trivy image \
@@ -178,7 +178,7 @@ jobs:
             --format sarif \
             --output trivy-frontend.sarif \
             ${{ env.REGISTRY }}/frontend:${{ env.SHA }}
- 
+
       - name: Upload SARIF results
         if: always()
         uses: actions/upload-artifact@v4
@@ -197,12 +197,12 @@ jobs:
           docker tag ${{ env.REGISTRY }}/api:${{ env.SHA }} api:test
           docker tag ${{ env.REGISTRY }}/worker:${{ env.SHA }} worker:test
           docker tag ${{ env.REGISTRY }}/frontend:${{ env.SHA }} frontend:test
-      
+
       - name: Write redis secret
         run: |
           mkdir -p secrets
           echo "test-redis-secret" > secrets/redis_password
- 
+
       - name: Stand up the full stack
         env:
           REDIS_HOST: redis
@@ -225,7 +225,7 @@ jobs:
           done
           echo "API never became healthy"
           exit 1
- 
+
       - name: Wait for Frontend health check
         run: |
           for i in $(seq 1 30); do
@@ -237,7 +237,7 @@ jobs:
           done
           echo "Frontend never became healthy"
           exit 1
- 
+
       - name: Run integration test — submit job and poll for completion
         run: |
           # Submit a job via the frontend/API
@@ -245,7 +245,7 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{"task": "integration-test"}' \
             | python3 -c "import sys,json; print(json.load(sys.stdin)['job_id'])")
- 
+
           echo "Submitted job ID: $JOB_ID"
 
           # Poll until status is 'completed' or timeout after 60s
@@ -264,10 +264,10 @@ jobs:
             fi
             sleep 3
           done
- 
+
           echo "Timed out waiting for job to complete"
           exit 1
- 
+
       - name: Tear down stack (always)
         if: always()
         run: docker compose down -v --remove-orphans
@@ -297,6 +297,7 @@ jobs:
 
           # Bring services up one at a time — compose replaces
           # each container while keeping the others running
+          docker compose up -d --no-deps redis
           docker compose up -d --no-deps api
           docker compose up -d --no-deps worker
           docker compose up -d --no-deps frontend
