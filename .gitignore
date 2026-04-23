@@ -1,6 +1,7 @@
 __pycache__/
 *.py[cod]
 .env*
+!.env.example
 api/.venv/
 worker/.venv/
 frontend/node_modules/
