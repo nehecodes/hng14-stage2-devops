@@ -1,19 +1,54 @@
-# hng14-stage2-devops
+# 🚀 Async Job Processing System (FastAPI + Redis + Workers)
 
-### Job Processing System
+This project demonstrates a **non-blocking, distributed job processing system** where heavy workloads are offloaded to background workers—keeping APIs fast and responsive under load.
 
-this project is a containerised job-processing stack built with FastAPI, Node.js/Express, and Redis.
-This repo is a fully production-hardened fork of the HNG 14 Stage 2 DevOps assessment.
+---
 
-Frontend — Express.js server that renders the job dashboard and proxies requests to the API  
-API — FastAPI service that creates jobs in Redis and serves status queries  
-Worker — Python process that dequeues jobs, simulates processing, and marks them complete  
-Redis — Shared queue and job-state store; not exposed to the host  
+## 🧠 Architecture Overview
 
-No local dependencies are needed to run this project. Python, Node.js, and all libraries run inside containers.  
+![Architecture Diagram](./image/architecture.png)  
 
+- **Frontend (Node.js/Express)**  
+  Renders dashboard + proxies API requests  
+
+- **API (FastAPI)**  
+  Validates requests, creates jobs, pushes to Redis  
+
+- **Worker (Python)**  
+  Consumes jobs, processes asynchronously, updates status  
+
+- **Redis**  
+  Acts as queue + job state store  
+
+---
+
+## ⚙️ Key Features
+
+- Non-blocking API design (async job queue)
+- Fully containerized (Docker Compose)
+- Real-time job status tracking
+- Decoupled services (API, worker, frontend)
+- Production-style CI/CD pipeline with:
+  - Linting (flake8, eslint, hadolint)
+  - Testing (pytest)
+  - Image build & push
+  - Security scanning (Trivy)
+  - Integration testing (full stack)
+  - Rolling deployment with health checks
+
+---
+
+## 🛠️ Tech Stack
+
+FastAPI • Redis • Python • Node.js • Docker • GitHub Actions
+
+---
+
+## ▶️ Run Locally
+
+```bash
 ### How to run locally
-1. Clone the repository: git clone https://github.com/tolua-d/hng14-stage2-devops.git and cd into the root directory
+1. Clone the repository: git clone https://github.com/nehecodes/hng14-stage2-devops.git && cd hng14-stage2-devops
 2. Create your .env file and copy .env.example into it: cp .env.example .env
 3. Build and start containers: docker compose up --build
 4. Check the containers' status: docker compose ps  
